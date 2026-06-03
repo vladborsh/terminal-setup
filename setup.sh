@@ -31,8 +31,8 @@ brew update
 
 brew tap homebrew/cask-fonts || true
 
-brew install --cask iterm2
-brew install --cask font-meslo-lg-nerd-font
+brew list --cask iterm2 &>/dev/null || brew install --cask iterm2
+brew list --cask font-meslo-lg-nerd-font &>/dev/null || brew install --cask font-meslo-lg-nerd-font
 
 brew install zsh tmux fzf ripgrep bat fd eza git
 brew install romkatv/powerlevel10k/powerlevel10k
