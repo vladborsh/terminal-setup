@@ -31,9 +31,31 @@ brew update
 brew list --cask iterm2 &>/dev/null || [ -d "/Applications/iTerm.app" ] || brew install --cask iterm2
 brew list --cask font-meslo-lg-nerd-font &>/dev/null || brew install --cask font-meslo-lg-nerd-font
 
-brew install zsh tmux fzf ripgrep bat fd eza git
+brew install zsh tmux fzf ripgrep bat fd eza git python3
 brew install romkatv/powerlevel10k/powerlevel10k
 brew install zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search
+
+# --- Git global config ---
+log "Configuring git..."
+CURRENT_GIT_NAME=$(git config --global user.name 2>/dev/null || true)
+CURRENT_GIT_EMAIL=$(git config --global user.email 2>/dev/null || true)
+
+if [[ -z "$CURRENT_GIT_NAME" ]]; then
+  read -rp "  Enter your git user name: " GIT_NAME
+  git config --global user.name "$GIT_NAME"
+else
+  log "Git user.name already set: $CURRENT_GIT_NAME"
+fi
+
+if [[ -z "$CURRENT_GIT_EMAIL" ]]; then
+  read -rp "  Enter your git email: " GIT_EMAIL
+  git config --global user.email "$GIT_EMAIL"
+else
+  log "Git user.email already set: $CURRENT_GIT_EMAIL"
+fi
+
+git config --global init.defaultBranch main
+git config --global credential.helper osxkeychain
 
 # --- iTerm2 Snazzy theme ---
 log "Downloading and opening iTerm2 Snazzy theme..."
@@ -69,6 +91,13 @@ if [[ ! -d "$HOME/.nvm" ]]; then
 else
   log "NVM already installed."
 fi
+
+log "Installing Node.js LTS via NVM..."
+export NVM_DIR="$HOME/.nvm"
+# shellcheck source=/dev/null
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+nvm install --lts
+nvm alias default lts/*
 
 # --- .zshrc ---
 log "Updating ~/.zshrc..."
