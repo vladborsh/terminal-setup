@@ -28,7 +28,7 @@ log "Installing packages via Homebrew..."
 
 brew update
 
-brew list --cask iterm2 &>/dev/null || [ -d "/Applications/iTerm.app" ] || brew install --cask iterm2
+brew list --cask ghostty &>/dev/null || [ -d "/Applications/Ghostty.app" ] || brew install --cask ghostty
 brew list --cask font-meslo-lg-nerd-font &>/dev/null || brew install --cask font-meslo-lg-nerd-font
 
 brew install zsh tmux fzf ripgrep bat fd eza git python3
@@ -57,9 +57,14 @@ fi
 git config --global init.defaultBranch main
 git config --global credential.helper osxkeychain
 
-# --- iTerm2 Snazzy theme ---
-log "Downloading and opening iTerm2 Snazzy theme..."
-(curl -Ls https://raw.githubusercontent.com/sindresorhus/iterm2-snazzy/main/Snazzy.itermcolors > /tmp/Snazzy.itermcolors && open /tmp/Snazzy.itermcolors)
+# --- Ghostty config ---
+log "Writing Ghostty config..."
+mkdir -p "$HOME/.config/ghostty"
+cat > "$HOME/.config/ghostty/config" << 'EOF'
+font-family = MesloLGS NF
+font-size = 13
+theme = catppuccin-mocha
+EOF
 
 # --- Oh My Zsh ---
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
@@ -98,6 +103,16 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 nvm install --lts
 nvm alias default lts/*
+
+# --- Claude Code ---
+read -rp "  Install Claude Code (requires Node.js)? [y/N] " INSTALL_CLAUDE
+if [[ "$INSTALL_CLAUDE" =~ ^[Yy]$ ]]; then
+  log "Installing Claude Code..."
+  npm install -g @anthropic-ai/claude-code
+  log "Claude Code installed. Run 'claude' to get started."
+else
+  log "Skipping Claude Code installation."
+fi
 
 # --- .zshrc ---
 log "Updating ~/.zshrc..."
@@ -156,6 +171,6 @@ set -g mouse on
 EOF
 
 log "Done! Next steps:"
-echo "  1) In iTerm2, select font MesloLGS NF (Profiles → Text)."
+echo "  1) Open Ghostty — font MesloLGS NF is already set in ~/.config/ghostty/config."
 echo "  2) Restart terminal, then run: p10k configure"
 echo "  3) Start tmux with: tmux"
