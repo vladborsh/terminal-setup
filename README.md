@@ -5,14 +5,12 @@ Automated setup script for macOS terminal with modern tools, themes, and configu
 ## What Gets Installed
 
 ### Applications
-- **iTerm2** - Modern terminal emulator
-- **Snazzy theme** - Color scheme for iTerm2
+- **Ghostty** - Terminal emulator (MesloLGS NF, Catppuccin Mocha)
 
 ### Fonts
 - **MesloLGS NF** - Nerd Font for Powerline symbols
 
 ### Tools
-- **zsh** - Modern shell
 - **tmux** - Terminal multiplexer
 - **fzf** - Fuzzy finder
 - **ripgrep** - Fast grep alternative
@@ -20,6 +18,8 @@ Automated setup script for macOS terminal with modern tools, themes, and configu
 - **fd** - Better find alternative
 - **eza** - Modern ls replacement
 - **git** - Version control
+- **jq** - JSON processor (used to merge Claude settings)
+- **NVM + Node.js LTS**
 
 ### Shell Framework & Theme
 - **Oh My Zsh** - Zsh configuration framework
@@ -28,7 +28,15 @@ Automated setup script for macOS terminal with modern tools, themes, and configu
 ### Zsh Plugins
 - **zsh-autosuggestions** - Fish-like autosuggestions
 - **zsh-syntax-highlighting** - Syntax highlighting for commands
+- **zsh-history-substring-search** - History search with ↑/↓
 - **fzf-tab** - Better tab completion with fzf
+
+### Claude Code (optional, asked during setup)
+- **Claude Code** - installed with the native installer (`~/.local/bin/claude`)
+- **`claude/settings.json`** - merged into `~/.claude/settings.json` (model, effort, theme, status line, plugins). Existing keys such as hooks are kept.
+- **ccstatusline** - status line; config from `claude/ccstatusline.json` → `~/.config/ccstatusline/settings.json`
+- **Plugin** - `ui-ux-pro-max` from `nextlevelbuilder/ui-ux-pro-max-skill`
+- **Skills** (via `npx skills`) - `mattpocock/skills` (grill-me, grill-with-docs, grilling, to-questionnaire, wait-what), `vercel-labs/skills` (find-skills), optionally `stablyai/orca` (orca-cli, orchestration, computer-use)
 
 ## Prerequisites
 
@@ -45,6 +53,8 @@ Run directly from GitHub:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vladborsh/terminal-setup/main/setup.sh | bash
 ```
+
+The script re-runs itself from a downloaded copy so prompts read from the terminal; config files are fetched from this repo.
 
 ### Option 2: Clone and Run
 
@@ -66,18 +76,16 @@ chmod +x setup.sh
 
 After the script completes, follow these steps:
 
-1. **Configure iTerm2**
-   - Open iTerm2
-   - Go to **Preferences → Profiles → Text**
-   - Change font to **MesloLGS NF** (size 12-14 recommended)
-   - The Snazzy color scheme will auto-import when opened
+1. **Open Ghostty** - font and theme are already set in `~/.config/ghostty/config`
 
 2. **Restart Terminal**
-   - Close and reopen iTerm2
+   - Close and reopen Ghostty
    - Powerlevel10k configuration wizard will launch automatically
    - Follow the prompts to customize your prompt
 
-3. **Start tmux** (optional)
+3. **Log in to Claude Code** (if installed): run `claude`
+
+4. **Start tmux** (optional)
    ```bash
    tmux
    ```
@@ -94,16 +102,19 @@ The script adds these convenient aliases:
 
 ### Tmux Configuration
 
-- **Prefix**: Changed from `Ctrl+b` to `Ctrl+a`
+- **Copy mode keys**: vi
 - **Mouse support**: Enabled
-- **Split shortcuts**:
-  - `Ctrl+a |` - Vertical split
-  - `Ctrl+a -` - Horizontal split
 
 ### Files Modified
 
-- `~/.zshrc` - Zsh configuration (custom block appended)
-- `~/.tmux.conf` - Tmux configuration (overwritten)
+Every overwritten file is first backed up as `<file>.bak.<timestamp>`.
+
+- `~/.zshrc` - custom block between markers (replaced on re-run)
+- `~/.zprofile` - Homebrew `shellenv` block (replaced on re-run)
+- `~/.tmux.conf` - overwritten
+- `~/.config/ghostty/config` - overwritten
+- `~/.claude/settings.json` - merged with `claude/settings.json`
+- `~/.config/ccstatusline/settings.json` - overwritten
 
 ## Troubleshooting
 
@@ -137,11 +148,16 @@ source ~/.zshrc
 
 ## Re-running the Script
 
-⚠️ **Note**: Currently, running the script multiple times will append duplicate configuration to `.zshrc`. If you need to re-run:
+The script is safe to re-run: managed blocks in `~/.zshrc` and `~/.zprofile` are replaced, not duplicated, and already installed tools are skipped.
 
-1. Backup your `.zshrc` first
-2. Remove the custom block between markers before re-running
-3. Or manually edit after re-running
+## Updating the Claude config in this repo
+
+After changing Claude settings locally, export the portable part (hooks and machine-specific keys are left out on purpose):
+
+```bash
+jq '{model, effortLevel, theme, statusLine, enabledPlugins, extraKnownMarketplaces, skipDangerousModePermissionPrompt, crossSessionInbound, agentPushNotifEnabled}' ~/.claude/settings.json > claude/settings.json
+jq 'del(.installation)' ~/.config/ccstatusline/settings.json > claude/ccstatusline.json
+```
 
 ## Uninstallation
 
@@ -149,17 +165,17 @@ To remove installed packages:
 
 ```bash
 # Remove applications
-brew uninstall --cask iterm2 font-meslo-lg-nerd-font
+brew uninstall --cask ghostty font-meslo-lg-nerd-font
 
 # Remove tools
-brew uninstall zsh tmux fzf ripgrep bat fd eza git powerlevel10k
+brew uninstall tmux fzf ripgrep bat fd eza jq powerlevel10k zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search
 
 # Remove Oh My Zsh
 rm -rf ~/.oh-my-zsh
 
 # Restore configs (if you have backups)
-# mv ~/.zshrc.backup ~/.zshrc
-# mv ~/.tmux.conf.backup ~/.tmux.conf
+# mv ~/.zshrc.bak.<timestamp> ~/.zshrc
+# mv ~/.tmux.conf.bak.<timestamp> ~/.tmux.conf
 ```
 
 ## Contributing
