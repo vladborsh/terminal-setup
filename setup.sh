@@ -99,8 +99,13 @@ log "Installing packages via Homebrew..."
 
 brew update
 
-brew list --cask ghostty &>/dev/null || [[ -d "/Applications/Ghostty.app" ]] || brew install --cask ghostty
-brew list --cask font-meslo-lg-nerd-font &>/dev/null || brew install --cask font-meslo-lg-nerd-font
+# Casks fail if the app/font was installed outside Homebrew, so don't abort on them.
+if ! brew list --cask ghostty &>/dev/null && [[ ! -d "/Applications/Ghostty.app" && ! -d "$HOME/Applications/Ghostty.app" ]]; then
+  brew install --cask ghostty || warn "Could not install Ghostty."
+fi
+if ! brew list --cask font-meslo-lg-nerd-font &>/dev/null && ! ls "$HOME/Library/Fonts"/MesloLGSNerdFont* &>/dev/null; then
+  brew install --cask font-meslo-lg-nerd-font || warn "Could not install Meslo Nerd Font."
+fi
 
 brew install tmux fzf ripgrep bat fd eza git python jq
 brew install powerlevel10k
@@ -133,7 +138,7 @@ log "Writing Ghostty config..."
 mkdir -p "$HOME/.config/ghostty"
 backup "$HOME/.config/ghostty/config"
 cat > "$HOME/.config/ghostty/config" << 'EOF'
-font-family = MesloLGS NF
+font-family = MesloLGS Nerd Font Mono
 font-size = 13
 theme = Catppuccin Mocha
 EOF
@@ -189,7 +194,7 @@ if [[ "$INSTALL_CLAUDE" =~ ^[Yy]$ ]]; then
   fi
 
   log "Installing ccstatusline..."
-  npm install -g "ccstatusline@$CCSTATUSLINE_VERSION"
+  npm install -g "ccstatusline@$CCSTATUSLINE_VERSION" || warn "Could not install ccstatusline."
   mkdir -p "$HOME/.config/ccstatusline"
   backup "$HOME/.config/ccstatusline/settings.json"
   cp "$(repo_file claude/ccstatusline.json)" "$HOME/.config/ccstatusline/settings.json"
@@ -200,8 +205,12 @@ if [[ "$INSTALL_CLAUDE" =~ ^[Yy]$ ]]; then
   REPO_SETTINGS="$(repo_file claude/settings.json)"
   if [[ -s "$CLAUDE_SETTINGS" ]]; then
     backup "$CLAUDE_SETTINGS"
-    jq -s '.[0] * .[1]' "$CLAUDE_SETTINGS" "$REPO_SETTINGS" > "$CLAUDE_SETTINGS.tmp"
-    mv "$CLAUDE_SETTINGS.tmp" "$CLAUDE_SETTINGS"
+    if jq -s '.[0] * .[1]' "$CLAUDE_SETTINGS" "$REPO_SETTINGS" > "$CLAUDE_SETTINGS.tmp"; then
+      mv "$CLAUDE_SETTINGS.tmp" "$CLAUDE_SETTINGS"
+    else
+      rm -f "$CLAUDE_SETTINGS.tmp"
+      warn "~/.claude/settings.json is not valid JSON; left unchanged. Merge $REPO_SETTINGS manually."
+    fi
   else
     cp "$REPO_SETTINGS" "$CLAUDE_SETTINGS"
   fi
@@ -296,7 +305,7 @@ set -g mouse on
 EOF
 
 log "Done! Next steps:"
-echo "  1) Open Ghostty — font MesloLGS NF and Catppuccin Mocha are set in ~/.config/ghostty/config."
+echo "  1) Open Ghostty — Meslo Nerd Font and Catppuccin Mocha are set in ~/.config/ghostty/config."
 echo "  2) Restart the terminal; the Powerlevel10k wizard starts automatically (or run: p10k configure)."
 echo "  3) Run 'claude' to log in to Claude Code."
 echo "  4) Start tmux with: tmux"

@@ -5,10 +5,10 @@ Automated setup script for macOS terminal with modern tools, themes, and configu
 ## What Gets Installed
 
 ### Applications
-- **Ghostty** - Terminal emulator (MesloLGS NF, Catppuccin Mocha)
+- **Ghostty** - Terminal emulator (Meslo Nerd Font, Catppuccin Mocha)
 
 ### Fonts
-- **MesloLGS NF** - Nerd Font for Powerline symbols
+- **Meslo Nerd Font** (`MesloLGS Nerd Font Mono`) - Nerd Font for Powerline symbols
 
 ### Tools
 - **tmux** - Terminal multiplexer
