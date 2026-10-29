@@ -1,6 +1,7 @@
 # Terminal Setup
 
 Automated setup script for macOS terminal with modern tools, themes, and configurations.
+For Windows 11, see [Windows 11](#windows-11).
 
 ## What Gets Installed
 
@@ -149,6 +150,53 @@ source ~/.zshrc
 ## Re-running the Script
 
 The script is safe to re-run: managed blocks in `~/.zshrc` and `~/.zprofile` are replaced, not duplicated, and already installed tools are skipped.
+
+## Windows 11
+
+`setup.ps1` sets up the same environment natively in PowerShell 7 + Windows Terminal (no WSL).
+
+### Install
+
+Run from a normal (non-admin) PowerShell window:
+
+```powershell
+irm https://raw.githubusercontent.com/vladborsh/terminal-setup/main/setup.ps1 | iex
+```
+
+Or clone and run:
+
+```powershell
+git clone https://github.com/vladborsh/terminal-setup.git
+cd terminal-setup
+powershell -ExecutionPolicy Bypass -File .\setup.ps1
+```
+
+The script needs `winget` (App Installer, preinstalled on Windows 11). When started from Windows PowerShell 5.1 it installs PowerShell 7 and re-runs itself there.
+
+### macOS → Windows
+
+| macOS | Windows |
+|---|---|
+| Homebrew | winget (apps) + Scoop (CLI tools) |
+| Ghostty | Windows Terminal (PowerShell 7 default profile, Catppuccin Mocha scheme) |
+| zsh + Oh My Zsh + Powerlevel10k | PowerShell 7 + Oh My Posh (`catppuccin_mocha` theme) |
+| zsh-autosuggestions, history-substring-search, syntax-highlighting | PSReadLine (history predictions, ↑/↓ search) |
+| fzf-tab, fzf key bindings | PSFzf (Tab, Ctrl+T, Ctrl+R) |
+| nvm | NVM for Windows |
+| tmux | not installed — use Windows Terminal panes |
+| osxkeychain | Git Credential Manager |
+
+Tools (fzf, ripgrep, bat, fd, eza, git, jq, python), aliases, git config and the Claude Code part (native installer, settings merge, ccstatusline, plugin, skills) match `setup.sh`. `CLAUDE_CODE_GIT_BASH_PATH` is set to Scoop's Git Bash.
+
+### Files modified
+
+Every overwritten file is first backed up as `<file>.bak.<timestamp>`.
+
+- `$PROFILE` (`Documents\PowerShell\Microsoft.PowerShell_profile.ps1`) - custom block between markers (replaced on re-run)
+- Windows Terminal `settings.json` - default profile, font, color scheme
+- `~\.config\oh-my-posh\catppuccin_mocha.omp.json` - downloaded theme
+- `~\.claude\settings.json` - merged with `claude/settings.json`
+- `~\.config\ccstatusline\settings.json` - overwritten
 
 ## Updating the Claude config in this repo
 
