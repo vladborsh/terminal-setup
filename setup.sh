@@ -31,7 +31,7 @@ brew update
 brew list --cask ghostty &>/dev/null || [ -d "/Applications/Ghostty.app" ] || brew install --cask ghostty
 brew list --cask font-meslo-lg-nerd-font &>/dev/null || brew install --cask font-meslo-lg-nerd-font
 
-brew install zsh tmux fzf ripgrep bat fd eza git gh python3
+brew install zsh tmux fzf ripgrep bat fd eza git gh podman python3
 brew install romkatv/powerlevel10k/powerlevel10k
 brew install zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search
 
@@ -141,6 +141,20 @@ if command -v claude >/dev/null 2>&1; then
   fi
 fi
 
+# --- Podman machine (VM for containers on macOS) ---
+if podman machine inspect >/dev/null 2>&1; then
+  log "Podman machine already exists. Start it with: podman machine start"
+else
+  read -rp "  Create and start Podman machine now (downloads ~1GB)? [y/N] " INIT_PODMAN < /dev/tty
+  if [[ "$INIT_PODMAN" =~ ^[Yy]$ ]]; then
+    log "Initializing Podman machine..."
+    podman machine init && podman machine start \
+      || warn "Podman machine setup failed. Run later: podman machine init && podman machine start"
+  else
+    log "Skipping Podman machine. Run later: podman machine init && podman machine start"
+  fi
+fi
+
 # --- .zshrc ---
 log "Updating ~/.zshrc..."
 
@@ -206,3 +220,4 @@ echo "  1) Open Ghostty — font MesloLGS NF is already set in ~/.config/ghostty
 echo "  2) Restart terminal, then run: p10k configure"
 echo "  3) Start tmux with: tmux"
 echo "  4) Log in to GitHub CLI: gh auth login"
+echo "  5) Podman: podman machine init (once), then podman machine start"

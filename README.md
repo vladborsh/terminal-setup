@@ -21,6 +21,7 @@ Automated setup script for macOS terminal with modern tools, themes, and configu
 - **eza** - Modern ls replacement
 - **git** - Version control
 - **gh** - GitHub CLI
+- **podman** - Container engine (VM is created on demand: `podman machine init && podman machine start`)
 
 ### Shell Framework & Theme
 - **Oh My Zsh** - Zsh configuration framework
